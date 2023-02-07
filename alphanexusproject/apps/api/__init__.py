@@ -2,7 +2,7 @@ from flask import Flask, request, Blueprint
 from flaskext.mysql import MySQL
 import json
 from extensions import mysql
-from helper_methods import generate_key
+from .helper_methods import generate_key, save_image
 
 api = Blueprint('api', __name__)
 
@@ -1490,7 +1490,7 @@ def Publisher():
             record = json.loads(request.data)
             cursor = connect.cursor()
             for row in record:
-                cursor.execute(f"INSERT INTO {table} (PublisherName, PublisherLogo) VALUES (%s, %s)", (row['PublisherName'], row['PublisherLogo']))   
+                cursor.execute(f"INSERT INTO {table} (PublisherName, PublisherLogo) VALUES (%s, %s)", (row['PublisherName'], save_image(row['PublisherLogo'], f"{row['PublisherName']}")))   
             connect.commit()
             cursor.close()
             return "Success"
@@ -1503,7 +1503,10 @@ def Publisher():
             if record[0][f'{pk}'] == None:
                 raise f"Didn't include {pk}"
             for row in record:
-                cursor.execute(f"UPDATE {table} SET PublisherName = %s, PublisherLogo = %s WHERE {table}.{pk} = %s",  (row['PublisherName'], row['PublisherLogo'], row[f'{pk}']))
+                if row['PublisherLogo'] != None:
+                    cursor.execute(f"UPDATE {table} SET PublisherName = %s, PublisherLogo = %s WHERE {table}.{pk} = %s",  (row['PublisherName'], save_image(row['PublisherLogo'], f"{row['PublisherName']}"), row[f'{pk}']))
+                else:
+                    cursor.execute(f"UPDATE {table} SET PublisherName = %s WHERE {table}.{pk} = %s",  (row['PublisherName'], row[f'{pk}']))
             connect.commit()
             cursor.close()
             return "OK"
@@ -1625,7 +1628,7 @@ def User():
                 cursor.execute(f'''INSERT INTO {table} 
                                (UserName, UserPassword, UserEmail, UserPhone, UserAvatar, ProfileBackground, 
                                IsPrivate, StatusId, UserRealName, UserCountryId, Bio, EmailSubscription, LastOnline, UserBotToken, CashbackBonus) 
-                               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''', (row['UserName'], row['UserPassword'], row['UserEmail'], row['UserPhone'],row['UserAvatar'], row['ProfileBackground'],row['IsPrivate'], row['StatusId'],row['UserRealName'], row['UserCountryId'],row['Bio'], row['EmailSubscription'], row['LastOnline'], row['UserBotToken'], row['CashbackBonus']))   
+                               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''', (row['UserName'], row['UserPassword'], row['UserEmail'], row['UserPhone'], save_image(row['UserAvatar'], f"{row['UserName']}_avatar"), save_image(row['ProfileBackground'], f"{row['UserName']}_background"),row['IsPrivate'], row['StatusId'],row['UserRealName'], row['UserCountryId'],row['Bio'], row['EmailSubscription'], row['LastOnline'], row['UserBotToken'], row['CashbackBonus']))   
             connect.commit()
             cursor.close()
             return "Success"

@@ -2,6 +2,8 @@ from flask import request
 from extensions import mysql
 import json
 import random
+import base64
+from os import path
 
 def generate_key():
     
@@ -37,5 +39,13 @@ def generate_token():
             return new_token    
 
 
-def save_image():
-    pass
+def save_image(img_data: str, name: str) -> str:
+    fpath = path.abspath(path.join(path.dirname(__file__), "..", "..", "static", "img", f"{name.replace(' ', '')}.png"))
+    with open(fpath, "wb") as iw:
+        iw.write(base64.b64decode(img_data))
+    return f"../static/img/{name}.png"
+    
+    
+    
+    
+    
