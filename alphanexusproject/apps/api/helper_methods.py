@@ -43,7 +43,7 @@ def save_image(img_data: str, name: str) -> str:
     fpath = path.abspath(path.join(path.dirname(__file__), "..", "..", "static", "img", f"{name.replace(' ', '')}.png"))
     with open(fpath, "wb") as iw:
         iw.write(base64.b64decode(img_data))
-    return f"../static/img/{name}.png"
+    return fpath
     
     
     
